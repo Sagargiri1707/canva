@@ -266,31 +266,42 @@ const HTMLEditor = ({
                     filter: brightness(0.95) !important;
                 }
 
-                /* Edit icon styles */
+                /* Edit icon styles - subtle corner design */
                 .html-editor-image-icon {
                     position: absolute !important;
-                    top: 50% !important;
-                    left: 50% !important;
-                    transform: translate(-50%, -50%) !important;
-                    background: rgba(255, 99, 71, 0.95) !important;
-                    color: white !important;
-                    width: 50px !important;
-                    height: 50px !important;
-                    border-radius: 50% !important;
+                    top: 8px !important;
+                    right: 8px !important;
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    backdrop-filter: blur(8px) !important;
+                    color: #FF6347 !important;
+                    width: 36px !important;
+                    height: 36px !important;
+                    border-radius: 8px !important;
                     display: flex !important;
                     align-items: center !important;
                     justify-content: center !important;
-                    font-size: 24px !important;
                     cursor: pointer !important;
                     opacity: 0 !important;
-                    transition: opacity 0.3s !important;
+                    transition: all 0.2s ease !important;
                     pointer-events: none !important;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+                    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+                }
+
+                .html-editor-image-icon:hover {
+                    background: #FF6347 !important;
+                    color: white !important;
+                    transform: scale(1.05) !important;
+                    box-shadow: 0 4px 12px rgba(255, 99, 71, 0.3) !important;
                 }
 
                 .html-editor-image-wrapper:hover .html-editor-image-icon {
                     opacity: 1 !important;
                     pointer-events: auto !important;
+                }
+
+                .html-editor-image-icon svg {
+                    pointer-events: none !important;
                 }
 
                 /* Ensure text overlays remain editable */
