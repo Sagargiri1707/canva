@@ -1,0 +1,59 @@
+{
+  "name": "react-html-editor-iframe",
+  "version": "1.0.0",
+  "description": "A full-page HTML editor component for React with iframe isolation",
+  "type": "module",
+  "main": "./dist/react-html-editor-iframe.umd.js",
+  "module": "./dist/react-html-editor-iframe.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/react-html-editor-iframe.es.js",
+      "require": "./dist/react-html-editor-iframe.umd.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:lib": "vite build --config vite.config.lib.js",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build:lib"
+  },
+  "keywords": [
+    "react",
+    "html-editor",
+    "wysiwyg",
+    "contenteditable",
+    "iframe",
+    "editor",
+    "html",
+    "react-component"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/react-html-editor-iframe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/react-html-editor-iframe/issues"
+  },
+  "homepage": "https://github.com/yourusername/react-html-editor-iframe#readme",
+  "peerDependencies": {
+    "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
+    "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "vite": "^5.0.8"
+  }
+}

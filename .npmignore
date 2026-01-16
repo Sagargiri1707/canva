@@ -1,0 +1,31 @@
+# Development files
+src/
+node_modules/
+.vite/
+.git/
+.gitignore
+
+# Example/demo files
+App.jsx
+App.css
+main.jsx
+index.html
+vite.config.js
+sample.html
+html-editor.html
+
+# Documentation (except README)
+reasoning.txt
+
+# Build artifacts (keep dist/)
+*.log
+*.tgz
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db

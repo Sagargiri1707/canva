@@ -1,0 +1,397 @@
+/* HTML Editor Component Styles - Isolated */
+
+/* Component-level reset to prevent parent styles from affecting this component */
+.html-editor-container,
+.html-editor-container * {
+    box-sizing: border-box;
+}
+
+.html-editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background: #f5f5f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.html-editor-header {
+    background: white;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+
+.html-editor-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+.html-editor-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.html-editor-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+.html-editor-btn-primary {
+    background: #FF6347;
+    color: white;
+}
+
+.html-editor-btn-primary:hover:not(:disabled) {
+    background: #e5533f;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 99, 71, 0.3);
+}
+
+.html-editor-btn-secondary {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.html-editor-btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+.html-editor-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.html-editor-content {
+    flex: 1;
+    padding: 24px;
+    overflow: hidden;
+    display: flex;
+}
+
+.html-editor-frame-container {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+}
+
+.html-editor-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+.html-editor-file-input {
+    display: none;
+}
+
+.html-editor-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    gap: 16px;
+}
+
+.html-editor-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f0f0f0;
+    border-top-color: #FF6347;
+    border-radius: 50%;
+    animation: html-editor-spin 1s linear infinite;
+}
+
+@keyframes html-editor-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.html-editor-loading-overlay p {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.html-editor-status-message {
+    padding: 12px 24px;
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+    animation: html-editor-slideDown 0.3s ease;
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.html-editor-status-success {
+    background: #4caf50;
+}
+
+.html-editor-status-error {
+    background: #f44336;
+}
+
+@keyframes html-editor-slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Image Picker Modal */
+.html-editor-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: html-editor-fadeIn 0.2s ease;
+}
+
+@keyframes html-editor-fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.html-editor-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: html-editor-slideUp 0.3s ease;
+}
+
+@keyframes html-editor-slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.html-editor-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.html-editor-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+.html-editor-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.html-editor-modal-close:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.html-editor-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.html-editor-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.html-editor-image-option {
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f9f9f9;
+    aspect-ratio: 1;
+    position: relative;
+}
+
+.html-editor-image-option:hover {
+    border-color: #FF6347;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(255, 99, 71, 0.2);
+}
+
+.html-editor-image-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Error Boundary */
+.html-editor-error-boundary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    padding: 40px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.html-editor-error-content {
+    max-width: 600px;
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.html-editor-error-content h2 {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+.html-editor-error-content p {
+    margin: 0 0 24px 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.html-editor-error-details {
+    margin: 24px 0;
+    text-align: left;
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.html-editor-error-details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.html-editor-error-details pre {
+    margin: 8px 0 0 0;
+    padding: 12px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12px;
+    color: #c62828;
+}
+
+.html-editor-error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .html-editor-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .html-editor-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .html-editor-btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+    }
+
+    .html-editor-content {
+        padding: 12px;
+    }
+
+    .html-editor-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .html-editor-image-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+}
