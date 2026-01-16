@@ -1,5 +1,5 @@
 {
-  "name": "canva-editor",
+  "name": "canva-editor-html",
   "version": "1.0.0",
   "description": "A full-page HTML editor component for React with iframe isolation",
   "type": "module",
