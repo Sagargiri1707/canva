@@ -1,0 +1,29 @@
+.container {
+    padding: 12px 24px;
+    color: white;
+    text-align: center;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+    animation: slideDown 0.3s ease;
+    flex-shrink: 0;
+    font-weight: 500;
+}
+
+.success {
+    background: #4caf50;
+}
+
+.error {
+    background: #f44336;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

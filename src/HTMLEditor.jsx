@@ -1,8 +1,14 @@
-import React, { useRef, useEffect, useReducer, useCallback } from 'react';
-import './HTMLEditor.css';
+import React, { useRef, useEffect, useReducer, useCallback, useState } from 'react';
+import StatusMessage from './components/StatusMessage';
+import Header from './components/Header';
+import FormattingToolbar from './components/FormattingToolbar';
+import ImagePicker from './components/ImagePicker';
+import EditorFrame from './components/EditorFrame';
+import { ACTIONS } from './constants';
+import styles from './HTMLEditor.module.css';
 
 // Action types for reducer
-const ACTIONS = {
+const EDITOR_ACTIONS = {
     SET_HTML_CONTENT: 'SET_HTML_CONTENT',
     SET_FILE_NAME: 'SET_FILE_NAME',
     SET_STATUS: 'SET_STATUS',
@@ -29,23 +35,23 @@ const initialState = {
 // Reducer function
 function editorReducer(state, action) {
     switch (action.type) {
-        case ACTIONS.SET_HTML_CONTENT:
+        case EDITOR_ACTIONS.SET_HTML_CONTENT:
             return { ...state, htmlContent: action.payload, isLoading: false, errorMessage: '' };
-        case ACTIONS.SET_FILE_NAME:
+        case EDITOR_ACTIONS.SET_FILE_NAME:
             return { ...state, currentFileName: action.payload };
-        case ACTIONS.SET_STATUS:
+        case EDITOR_ACTIONS.SET_STATUS:
             return { ...state, statusMessage: action.payload, errorMessage: '' };
-        case ACTIONS.SET_ERROR:
+        case EDITOR_ACTIONS.SET_ERROR:
             return { ...state, errorMessage: action.payload, statusMessage: '', isLoading: false };
-        case ACTIONS.SET_LOADING:
+        case EDITOR_ACTIONS.SET_LOADING:
             return { ...state, isLoading: action.payload };
-        case ACTIONS.SHOW_IMAGE_PICKER:
+        case EDITOR_ACTIONS.SHOW_IMAGE_PICKER:
             return { ...state, showImagePicker: true, selectedImage: action.payload };
-        case ACTIONS.HIDE_IMAGE_PICKER:
+        case EDITOR_ACTIONS.HIDE_IMAGE_PICKER:
             return { ...state, showImagePicker: false, selectedImage: null };
-        case ACTIONS.CLEAR_STATUS:
+        case EDITOR_ACTIONS.CLEAR_STATUS:
             return { ...state, statusMessage: '' };
-        case ACTIONS.CLEAR_ERROR:
+        case EDITOR_ACTIONS.CLEAR_ERROR:
             return { ...state, errorMessage: '' };
         default:
             return state;
@@ -53,17 +59,7 @@ function editorReducer(state, action) {
 }
 
 /**
- * HTMLEditor Component - Production Ready
- *
- * A full-page HTML editor with iframe isolation, text editing, and image replacement.
- *
- * @param {Object} props
- * @param {string} props.initialHTML - Initial HTML content to load
- * @param {string} props.fileName - Default file name for downloads
- * @param {function} props.onSave - Callback when content is saved
- * @param {function} props.onChange - Callback when content changes
- * @param {boolean} props.showToolbar - Show/hide toolbar
- * @param {Array} props.assets - Array of image URLs for replacement
+ * HTMLEditor Component - Modular Version
  */
 const HTMLEditor = ({
     initialHTML = '',
@@ -79,8 +75,12 @@ const HTMLEditor = ({
         currentFileName: fileName
     });
 
+    const [showFormattingToolbar, setShowFormattingToolbar] = useState(false);
+    const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
+
+    const savedRangeRef = useRef(null);
+    const iframeDocRef = useRef(null);
     const iframeRef = useRef(null);
-    const fileInputRef = useRef(null);
     const statusTimeoutRef = useRef(null);
     const errorTimeoutRef = useRef(null);
     const iframeLoadedRef = useRef(false);
@@ -88,13 +88,13 @@ const HTMLEditor = ({
     // Update state when props change
     useEffect(() => {
         if (initialHTML && initialHTML !== state.htmlContent) {
-            dispatch({ type: ACTIONS.SET_HTML_CONTENT, payload: initialHTML });
+            dispatch({ type: EDITOR_ACTIONS.SET_HTML_CONTENT, payload: initialHTML });
         }
     }, [initialHTML]);
 
     useEffect(() => {
         if (fileName !== state.currentFileName) {
-            dispatch({ type: ACTIONS.SET_FILE_NAME, payload: fileName });
+            dispatch({ type: EDITOR_ACTIONS.SET_FILE_NAME, payload: fileName });
         }
     }, [fileName]);
 
@@ -103,9 +103,9 @@ const HTMLEditor = ({
         if (statusTimeoutRef.current) {
             clearTimeout(statusTimeoutRef.current);
         }
-        dispatch({ type: ACTIONS.SET_STATUS, payload: message });
+        dispatch({ type: EDITOR_ACTIONS.SET_STATUS, payload: message });
         statusTimeoutRef.current = setTimeout(() => {
-            dispatch({ type: ACTIONS.CLEAR_STATUS });
+            dispatch({ type: EDITOR_ACTIONS.CLEAR_STATUS });
         }, duration);
     }, []);
 
@@ -114,9 +114,9 @@ const HTMLEditor = ({
         if (errorTimeoutRef.current) {
             clearTimeout(errorTimeoutRef.current);
         }
-        dispatch({ type: ACTIONS.SET_ERROR, payload: message });
+        dispatch({ type: EDITOR_ACTIONS.SET_ERROR, payload: message });
         errorTimeoutRef.current = setTimeout(() => {
-            dispatch({ type: ACTIONS.CLEAR_ERROR });
+            dispatch({ type: EDITOR_ACTIONS.CLEAR_ERROR });
         }, duration);
     }, []);
 
@@ -169,8 +169,6 @@ const HTMLEditor = ({
                 const parent = img.parentNode;
                 const wrapper = iframeDoc.createElement('div');
                 wrapper.className = 'html-editor-image-wrapper';
-                wrapper.style.position = 'relative';
-                wrapper.style.display = 'inline-block';
                 wrapper.contentEditable = 'false';
 
                 // Create edit icon
@@ -193,7 +191,7 @@ const HTMLEditor = ({
                 const handleClick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    dispatch({ type: ACTIONS.SHOW_IMAGE_PICKER, payload: img });
+                    dispatch({ type: EDITOR_ACTIONS.SHOW_IMAGE_PICKER, payload: img });
                 };
 
                 wrapper.addEventListener('click', handleClick);
@@ -204,6 +202,117 @@ const HTMLEditor = ({
             showError('Failed to setup image click handlers');
         }
     }, [showError]);
+
+    // Setup text selection listener
+    const setupSelectionListener = useCallback((iframeDoc) => {
+        try {
+            iframeDocRef.current = iframeDoc;
+
+            const handleSelectionChange = () => {
+                const selection = iframeDoc.getSelection();
+
+                if (!selection || selection.isCollapsed || selection.toString().trim() === '') {
+                    setShowFormattingToolbar(false);
+                    savedRangeRef.current = null;
+                    return;
+                }
+
+                // Save the range before it's lost
+                try {
+                    const range = selection.getRangeAt(0);
+                    savedRangeRef.current = range.cloneRange();
+
+                    const rect = range.getBoundingClientRect();
+                    const iframe = iframeRef.current;
+
+                    if (!iframe) return;
+
+                    // Get iframe position relative to viewport
+                    const iframeRect = iframe.getBoundingClientRect();
+
+                    // Calculate toolbar position with smart positioning
+                    const toolbarHeight = 48;
+                    const toolbarWidth = 400;
+                    const padding = 8;
+
+                    let top = iframeRect.top + rect.top - toolbarHeight - padding;
+                    let left = iframeRect.left + rect.left + (rect.width / 2) - (toolbarWidth / 2);
+
+                    // Adjust if toolbar goes above viewport
+                    if (top < 60) {
+                        top = iframeRect.top + rect.bottom + padding;
+                    }
+
+                    // Adjust if toolbar goes beyond right edge
+                    if (left + toolbarWidth > window.innerWidth - padding) {
+                        left = window.innerWidth - toolbarWidth - padding;
+                    }
+
+                    // Adjust if toolbar goes beyond left edge
+                    if (left < padding) {
+                        left = padding;
+                    }
+
+                    setToolbarPosition({ top, left });
+                    setShowFormattingToolbar(true);
+                } catch (e) {
+                    console.error('Error handling selection:', e);
+                }
+            };
+
+            // Listen for selection changes
+            iframeDoc.addEventListener('selectionchange', handleSelectionChange);
+            iframeDoc.addEventListener('mouseup', handleSelectionChange);
+
+            // Hide toolbar on scroll
+            const handleScroll = () => {
+                setShowFormattingToolbar(false);
+            };
+
+            iframeDoc.addEventListener('scroll', handleScroll, true);
+
+        } catch (error) {
+            console.error('Error setting up selection listener:', error);
+        }
+    }, []);
+
+    // Execute formatting command
+    const executeCommand = useCallback((command, value = null) => {
+        try {
+            const iframeDoc = iframeDocRef.current;
+            if (!iframeDoc || !savedRangeRef.current) return;
+
+            // Restore selection from saved range
+            const selection = iframeDoc.getSelection();
+            if (selection) {
+                try {
+                    selection.removeAllRanges();
+                    selection.addRange(savedRangeRef.current);
+                } catch (e) {
+                    console.error('Error restoring selection:', e);
+                    return;
+                }
+            }
+
+            // Execute command
+            iframeDoc.execCommand(command, false, value);
+
+            // Update saved range after command
+            if (selection && selection.rangeCount > 0) {
+                savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+            }
+
+            // Trigger onChange
+            if (onChange) {
+                const currentHTML = getSerializedHTML();
+                onChange(currentHTML);
+            }
+
+        } catch (error) {
+            console.error('Error executing command:', error);
+            showError('Failed to apply formatting');
+        }
+    }, [onChange, getSerializedHTML, showError]);
 
     // Setup editable content
     const setupEditableContent = useCallback(() => {
@@ -251,12 +360,11 @@ const HTMLEditor = ({
                 /* Image wrapper styles */
                 .html-editor-image-wrapper {
                     position: relative !important;
-                    display: inline-block !important;
+                    display: inline !important;
                     cursor: pointer !important;
                 }
 
                 .html-editor-image-wrapper img {
-                    display: block !important;
                     transition: opacity 0.2s, filter 0.2s !important;
                     cursor: pointer !important;
                 }
@@ -303,12 +411,6 @@ const HTMLEditor = ({
                 .html-editor-image-icon svg {
                     pointer-events: none !important;
                 }
-
-                /* Ensure text overlays remain editable */
-                .html-editor-image-wrapper ~ *,
-                .html-editor-image-wrapper + * {
-                    cursor: text !important;
-                }
                 ` : ''}
             `;
             iframeDoc.head.appendChild(style);
@@ -338,6 +440,9 @@ const HTMLEditor = ({
                 setupImageClickHandlers(iframeDoc);
             }
 
+            // Setup text selection listener for formatting toolbar
+            setupSelectionListener(iframeDoc);
+
             // Auto-focus the body
             setTimeout(() => {
                 body.focus();
@@ -348,7 +453,7 @@ const HTMLEditor = ({
             console.error('Error setting up editable content:', error);
             showError('Failed to initialize editor. Please refresh the page.');
         }
-    }, [assets, onChange, getSerializedHTML, setupImageClickHandlers, showError]);
+    }, [assets, onChange, getSerializedHTML, setupImageClickHandlers, setupSelectionListener, showError]);
 
     // Inject HTML into iframe
     useEffect(() => {
@@ -425,7 +530,7 @@ const HTMLEditor = ({
         const file = event.target.files?.[0];
         if (!file) return;
 
-        dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+        dispatch({ type: EDITOR_ACTIONS.SET_LOADING, payload: true });
 
         const reader = new FileReader();
 
@@ -436,28 +541,23 @@ const HTMLEditor = ({
                     throw new Error('Invalid file content');
                 }
 
-                dispatch({ type: ACTIONS.SET_HTML_CONTENT, payload: content });
-                dispatch({ type: ACTIONS.SET_FILE_NAME, payload: file.name });
+                dispatch({ type: EDITOR_ACTIONS.SET_HTML_CONTENT, payload: content });
+                dispatch({ type: EDITOR_ACTIONS.SET_FILE_NAME, payload: file.name });
                 showStatus('File loaded successfully!');
             } catch (error) {
                 console.error('Error loading file:', error);
                 showError('Failed to load file');
-                dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+                dispatch({ type: EDITOR_ACTIONS.SET_LOADING, payload: false });
             }
         };
 
         reader.onerror = () => {
             console.error('FileReader error:', reader.error);
             showError('Failed to read file');
-            dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+            dispatch({ type: EDITOR_ACTIONS.SET_LOADING, payload: false });
         };
 
         reader.readAsText(file);
-
-        // Reset file input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
     }, [showStatus, showError]);
 
     // Handle save
@@ -502,7 +602,7 @@ const HTMLEditor = ({
         }
 
         try {
-            dispatch({ type: ACTIONS.SET_HTML_CONTENT, payload: initialHTML });
+            dispatch({ type: EDITOR_ACTIONS.SET_HTML_CONTENT, payload: initialHTML });
             showStatus('Content reset to original');
         } catch (error) {
             console.error('Error resetting content:', error);
@@ -518,7 +618,7 @@ const HTMLEditor = ({
             }
 
             state.selectedImage.src = assetUrl;
-            dispatch({ type: ACTIONS.HIDE_IMAGE_PICKER });
+            dispatch({ type: EDITOR_ACTIONS.HIDE_IMAGE_PICKER });
             showStatus('Image replaced successfully!');
 
             // Trigger onChange if provided
@@ -533,7 +633,7 @@ const HTMLEditor = ({
         } catch (error) {
             console.error('Error replacing image:', error);
             showError('Failed to replace image');
-            dispatch({ type: ACTIONS.HIDE_IMAGE_PICKER });
+            dispatch({ type: EDITOR_ACTIONS.HIDE_IMAGE_PICKER });
         }
     }, [state.selectedImage, onChange, getSerializedHTML, showStatus, showError]);
 
@@ -557,122 +657,43 @@ const HTMLEditor = ({
     }, [getSerializedHTML]);
 
     return (
-        <div className="html-editor-container">
+        <div className={styles.container}>
             {/* Status Messages */}
-            {state.statusMessage && (
-                <div className="html-editor-status-message html-editor-status-success">
-                    {state.statusMessage}
-                </div>
+            <StatusMessage message={state.statusMessage} type="success" />
+            <StatusMessage message={state.errorMessage} type="error" />
+
+            {/* Formatting Toolbar */}
+            {showFormattingToolbar && (
+                <FormattingToolbar
+                    position={toolbarPosition}
+                    onCommand={executeCommand}
+                    onClose={() => setShowFormattingToolbar(false)}
+                />
             )}
 
-            {state.errorMessage && (
-                <div className="html-editor-status-message html-editor-status-error">
-                    ⚠️ {state.errorMessage}
-                </div>
-            )}
-
-            {/* Toolbar */}
+            {/* Header Toolbar */}
             {showToolbar && (
-                <div className="html-editor-header">
-                    <div className="html-editor-title">
-                        📝 HTML Editor - {state.currentFileName}
-                    </div>
-                    <div className="html-editor-actions">
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept=".html,.htm"
-                            onChange={handleLoadFile}
-                            className="html-editor-file-input"
-                            disabled={state.isLoading}
-                        />
-                        <button
-                            className="html-editor-btn html-editor-btn-secondary"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={state.isLoading}
-                        >
-                            📁 Load HTML
-                        </button>
-                        <button
-                            className="html-editor-btn html-editor-btn-secondary"
-                            onClick={handleReset}
-                            disabled={state.isLoading || !initialHTML}
-                        >
-                            🔄 Reset
-                        </button>
-                        <button
-                            className="html-editor-btn html-editor-btn-primary"
-                            onClick={handleSave}
-                            disabled={state.isLoading || !state.htmlContent}
-                        >
-                            💾 Save HTML
-                        </button>
-                    </div>
-                </div>
+                <Header
+                    fileName={state.currentFileName}
+                    isLoading={state.isLoading}
+                    hasContent={!!state.htmlContent}
+                    hasInitialHTML={!!initialHTML}
+                    onLoadFile={handleLoadFile}
+                    onReset={handleReset}
+                    onSave={handleSave}
+                />
             )}
 
             {/* Editor Content */}
-            <div className="html-editor-content">
-                <div className="html-editor-frame-container">
-                    {state.isLoading && (
-                        <div className="html-editor-loading-overlay">
-                            <div className="html-editor-spinner"></div>
-                            <p>Loading...</p>
-                        </div>
-                    )}
-                    <iframe
-                        ref={iframeRef}
-                        className="html-editor-iframe"
-                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
-                        title="HTML Editor"
-                    />
-                </div>
-            </div>
+            <EditorFrame ref={iframeRef} isLoading={state.isLoading} />
 
             {/* Image Picker Modal */}
-            {state.showImagePicker && assets.length > 0 && (
-                <div
-                    className="html-editor-modal-overlay"
-                    onClick={() => dispatch({ type: ACTIONS.HIDE_IMAGE_PICKER })}
-                >
-                    <div className="html-editor-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="html-editor-modal-header">
-                            <h3>Replace Image</h3>
-                            <button
-                                className="html-editor-modal-close"
-                                onClick={() => dispatch({ type: ACTIONS.HIDE_IMAGE_PICKER })}
-                                aria-label="Close"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        <div className="html-editor-modal-body">
-                            <div className="html-editor-image-grid">
-                                {assets.map((assetUrl, index) => (
-                                    <div
-                                        key={`${assetUrl}-${index}`}
-                                        className="html-editor-image-option"
-                                        onClick={() => handleImageReplace(assetUrl)}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                handleImageReplace(assetUrl);
-                                            }
-                                        }}
-                                    >
-                                        <img
-                                            src={assetUrl}
-                                            alt={`Asset ${index + 1}`}
-                                            loading="lazy"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {state.showImagePicker && (
+                <ImagePicker
+                    assets={assets}
+                    onSelect={handleImageReplace}
+                    onClose={() => dispatch({ type: EDITOR_ACTIONS.HIDE_IMAGE_PICKER })}
+                />
             )}
         </div>
     );

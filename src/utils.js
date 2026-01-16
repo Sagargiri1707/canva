@@ -33,6 +33,38 @@ export function serializeIframeHTML(iframe) {
 }
 
 /**
+ * Calculate smart position for toolbar
+ * @param {DOMRect} selectionRect - Selection bounding rect
+ * @param {DOMRect} iframeRect - Iframe bounding rect
+ * @param {number} toolbarHeight - Toolbar height
+ * @param {number} toolbarWidth - Toolbar width
+ * @returns {Object} Position {top, left}
+ */
+export function calculateToolbarPosition(selectionRect, iframeRect, toolbarHeight = 48, toolbarWidth = 400) {
+    const padding = 8;
+
+    let top = iframeRect.top + selectionRect.top - toolbarHeight - padding;
+    let left = iframeRect.left + selectionRect.left + (selectionRect.width / 2) - (toolbarWidth / 2);
+
+    // Adjust if toolbar goes above viewport
+    if (top < 60) {
+        top = iframeRect.top + selectionRect.bottom + padding;
+    }
+
+    // Adjust if toolbar goes beyond right edge
+    if (left + toolbarWidth > window.innerWidth - padding) {
+        left = window.innerWidth - toolbarWidth - padding;
+    }
+
+    // Adjust if toolbar goes beyond left edge
+    if (left < padding) {
+        left = padding;
+    }
+
+    return { top, left };
+}
+
+/**
  * Checks if iframe document is accessible
  * @param {HTMLIFrameElement} iframe - The iframe element
  * @returns {boolean} True if accessible, false otherwise

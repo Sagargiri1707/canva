@@ -296,6 +296,137 @@
     display: block;
 }
 
+/* Formatting Toolbar */
+.html-editor-formatting-toolbar {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    animation: html-editor-fadeIn 0.2s ease;
+}
+
+.html-editor-formatting-toolbar-main {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px;
+}
+
+.html-editor-format-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #333;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.html-editor-format-btn:hover {
+    background: #f0f0f0;
+    color: #FF6347;
+}
+
+.html-editor-format-btn:active {
+    background: #e0e0e0;
+    transform: scale(0.95);
+}
+
+.html-editor-format-btn svg {
+    pointer-events: none;
+}
+
+.html-editor-toolbar-divider {
+    width: 1px;
+    height: 24px;
+    background: #e0e0e0;
+    margin: 0 4px;
+}
+
+.html-editor-format-btn-group {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.html-editor-format-btn-group:hover {
+    background: #f0f0f0;
+}
+
+.html-editor-format-label {
+    font-weight: 600;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.html-editor-color-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.html-editor-more-btn {
+    margin-left: 2px;
+}
+
+/* More Options Dropdown */
+.html-editor-formatting-toolbar-more {
+    border-top: 1px solid #e0e0e0;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.html-editor-format-btn-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #333;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.html-editor-format-btn-dropdown:hover {
+    background: #f0f0f0;
+    color: #FF6347;
+}
+
+.html-editor-format-btn-dropdown svg {
+    flex-shrink: 0;
+}
+
+.html-editor-format-btn-dropdown span:first-child {
+    flex-shrink: 0;
+    min-width: 24px;
+}
+
+.html-editor-format-btn-dropdown span:last-child {
+    font-size: 14px;
+}
+
 /* Error Boundary */
 .html-editor-error-boundary {
     display: flex;
