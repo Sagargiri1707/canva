@@ -104,14 +104,14 @@ The component accepts these props:
 After publishing to npm, install it:
 
 ```bash
-npm install react-html-editor-iframe
+npm install canva-editor
 ```
 
 Use in your app:
 
 ```jsx
-import HTMLEditor from 'react-html-editor-iframe';
-import 'react-html-editor-iframe/dist/style.css';
+import HTMLEditor from 'canva-editor';
+import 'canva-editor/dist/style.css';
 
 function MyApp() {
     return (

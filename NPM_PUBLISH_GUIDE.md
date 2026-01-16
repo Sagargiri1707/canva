@@ -1,6 +1,6 @@
 # NPM Publishing Guide
 
-Step-by-step guide to publish `react-html-editor-iframe` to npm.
+Step-by-step guide to publish `canva-editor` to npm.
 
 ## Prerequisites
 
@@ -25,11 +25,11 @@ Edit `package.json` and update these fields:
 
 ```json
 {
-  "name": "react-html-editor-iframe",  // Choose a unique name if this is taken
+  "name": "canva-editor",  // Choose a unique name if this is taken
   "author": "Your Name <your.email@example.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/react-html-editor-iframe.git"
+    "url": "https://github.com/YOUR_USERNAME/canva-editor.git"
   }
 }
 ```
@@ -37,10 +37,10 @@ Edit `package.json` and update these fields:
 ### 3. Check Package Name Availability
 
 ```bash
-npm search react-html-editor-iframe
+npm search canva-editor
 ```
 
-If the name is taken, choose a different one (e.g., `@yourname/react-html-editor-iframe`).
+If the name is taken, choose a different one (e.g., `@yourname/canva-editor`).
 
 ### 4. Login to npm
 
@@ -76,14 +76,14 @@ Create a test project and install your package locally:
 mkdir test-app
 cd test-app
 npx create-react-app .
-npm install /path/to/react-html-editor-iframe
+npm install /path/to/canva-editor
 ```
 
 Then test it in your React app:
 
 ```jsx
-import HTMLEditor from 'react-html-editor-iframe';
-import 'react-html-editor-iframe/dist/style.css';
+import HTMLEditor from 'canva-editor';
+import 'canva-editor/dist/style.css';
 ```
 
 ### 7. Dry Run (Check what will be published)
@@ -110,14 +110,14 @@ npm publish --access public
 
 ### 9. Verify Publication
 
-Check your package at: `https://www.npmjs.com/package/react-html-editor-iframe`
+Check your package at: `https://www.npmjs.com/package/canva-editor`
 
 ### 10. Test Installation
 
 In a new project:
 
 ```bash
-npm install react-html-editor-iframe
+npm install canva-editor
 ```
 
 ## Publishing Updates
@@ -160,7 +160,7 @@ Choose a different name or use a scoped package:
 
 ```json
 {
-  "name": "@yourusername/react-html-editor-iframe"
+  "name": "@yourusername/canva-editor"
 }
 ```
 
@@ -220,7 +220,7 @@ git push --tags
 You can only unpublish within 72 hours:
 
 ```bash
-npm unpublish react-html-editor-iframe@1.0.0
+npm unpublish canva-editor@1.0.0
 ```
 
 ⚠️ **Warning**: Unpublishing can break projects that depend on your package!

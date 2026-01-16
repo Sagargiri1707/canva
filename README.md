@@ -1,4 +1,4 @@
-# react-html-editor-iframe
+# canva-editor
 
 A full-page HTML editor component for React that allows users to edit text content within complete HTML documents while preserving structure, styles, and scripts.
 
@@ -27,20 +27,20 @@ This component follows robust architectural decisions:
 ## Installation
 
 ```bash
-npm install react-html-editor-iframe
+npm install canva-editor
 ```
 
 or
 
 ```bash
-yarn add react-html-editor-iframe
+yarn add canva-editor
 ```
 
 ## Quick Start
 
 ```jsx
-import HTMLEditor from 'react-html-editor-iframe';
-import 'react-html-editor-iframe/dist/style.css';
+import HTMLEditor from 'canva-editor';
+import 'canva-editor/dist/style.css';
 
 function App() {
     const htmlContent = `<!DOCTYPE html>
@@ -236,8 +236,8 @@ const currentHTML = iframeRef.current?.getHTML();
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/yourusername/react-html-editor-iframe.git
-cd react-html-editor-iframe
+git clone https://github.com/yourusername/canva-editor.git
+cd canva-editor
 npm install
 ```
 
@@ -256,8 +256,8 @@ npm run build:lib
 ```
 
 This creates the `dist/` folder with:
-- `react-html-editor-iframe.es.js` - ES module
-- `react-html-editor-iframe.umd.js` - UMD module
+- `canva-editor.es.js` - ES module
+- `canva-editor.umd.js` - UMD module
 - `style.css` - Component styles
 - Source maps
 

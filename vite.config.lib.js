@@ -9,7 +9,7 @@ export default defineConfig({
       entry: resolve(__dirname, 'src/index.js'),
       name: 'ReactHTMLEditor',
       formats: ['es', 'umd'],
-      fileName: (format) => `react-html-editor-iframe.${format}.js`
+      fileName: (format) => `canva-editor.${format}.js`
     },
     rollupOptions: {
       external: ['react', 'react-dom'],

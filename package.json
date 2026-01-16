@@ -1,15 +1,15 @@
 {
-  "name": "react-html-editor-iframe",
+  "name": "canva-editor",
   "version": "1.0.0",
   "description": "A full-page HTML editor component for React with iframe isolation",
   "type": "module",
-  "main": "./dist/react-html-editor-iframe.umd.js",
-  "module": "./dist/react-html-editor-iframe.es.js",
+  "main": "./dist/canva-editor.umd.js",
+  "module": "./dist/canva-editor.es.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/react-html-editor-iframe.es.js",
-      "require": "./dist/react-html-editor-iframe.umd.js",
+      "import": "./dist/canva-editor.es.js",
+      "require": "./dist/canva-editor.umd.js",
       "types": "./dist/index.d.ts"
     },
     "./dist/style.css": "./dist/style.css"
@@ -40,12 +40,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/react-html-editor-iframe.git"
+    "url": "https://github.com/yourusername/canva-editor.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/react-html-editor-iframe/issues"
+    "url": "https://github.com/yourusername/canva-editor/issues"
   },
-  "homepage": "https://github.com/yourusername/react-html-editor-iframe#readme",
+  "homepage": "https://github.com/yourusername/canva-editor#readme",
   "peerDependencies": {
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
     "react-dom": "^16.8.0 || ^17.0.0 || ^18.0.0"

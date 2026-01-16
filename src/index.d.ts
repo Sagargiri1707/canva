@@ -52,8 +52,8 @@ export interface HTMLEditorProps {
  *
  * @example
  * ```tsx
- * import HTMLEditor from 'react-html-editor-iframe';
- * import 'react-html-editor-iframe/dist/style.css';
+ * import HTMLEditor from 'canva-editor';
+ * import 'canva-editor/dist/style.css';
  *
  * function App() {
  *   const handleSave = (html) => console.log(html);
@@ -78,7 +78,7 @@ declare const HTMLEditor: FC<HTMLEditorProps>;
  *
  * @example
  * ```tsx
- * import { HTMLEditor, ErrorBoundary } from 'react-html-editor-iframe';
+ * import { HTMLEditor, ErrorBoundary } from 'canva-editor';
  *
  * function App() {
  *   return (
