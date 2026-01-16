@@ -7,6 +7,7 @@
     align-items: center;
     flex-shrink: 0;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    gap: 16px;
 }
 
 .title {
@@ -16,10 +17,19 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
 }
 
+.editorActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-left: 16px;
+    border-left: 1px solid #e0e0e0;
+}
+
 .actions {
     display: flex;
     gap: 12px;
     align-items: center;
+    margin-left: auto;
 }
 
 .fileInput {
@@ -61,4 +71,25 @@
 .btnSecondary:hover:not(:disabled) {
     background: #e8e8e8;
     transform: translateY(-1px);
+}
+
+.btnIcon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    color: #333;
+}
+
+.btnIcon:hover:not(:disabled) {
+    background: #e8e8e8;
+    color: #FF6347;
+    transform: translateY(-1px);
+}
+
+.btnIcon svg {
+    flex-shrink: 0;
 }

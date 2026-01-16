@@ -4,6 +4,7 @@ import Header from './components/Header';
 import FormattingToolbar from './components/FormattingToolbar';
 import ImagePicker from './components/ImagePicker';
 import EditorFrame from './components/EditorFrame';
+import LinkEditor from './components/LinkEditor';
 import { ACTIONS } from './constants';
 import styles from './HTMLEditor.module.css';
 
@@ -77,6 +78,8 @@ const HTMLEditor = ({
 
     const [showFormattingToolbar, setShowFormattingToolbar] = useState(false);
     const [toolbarPosition, setToolbarPosition] = useState({ top: 0, left: 0 });
+    const [showLinkEditor, setShowLinkEditor] = useState(false);
+    const [linkEditorData, setLinkEditorData] = useState({ url: '', text: '' });
 
     const savedRangeRef = useRef(null);
     const iframeDocRef = useRef(null);
@@ -162,14 +165,18 @@ const HTMLEditor = ({
                 if (img.hasAttribute('data-editor-image-setup')) return;
                 img.setAttribute('data-editor-image-setup', 'true');
 
-                // Make image non-editable to prevent text cursor
-                img.contentEditable = 'false';
+                // Get image's computed display style
+                const computedStyle = iframeDoc.defaultView?.getComputedStyle(img);
+                const imgDisplay = computedStyle?.display || 'inline';
 
-                // Wrap image in a container for icon positioning
+                // Wrap image in a minimal container
                 const parent = img.parentNode;
-                const wrapper = iframeDoc.createElement('div');
+                const wrapper = iframeDoc.createElement('span');
                 wrapper.className = 'html-editor-image-wrapper';
-                wrapper.contentEditable = 'false';
+                wrapper.style.position = 'relative';
+                wrapper.style.display = imgDisplay === 'block' ? 'block' : 'inline-block';
+                wrapper.style.maxWidth = '100%';
+                wrapper.style.lineHeight = '0';
 
                 // Create edit icon
                 const icon = iframeDoc.createElement('div');
@@ -180,14 +187,13 @@ const HTMLEditor = ({
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                     </svg>
                 `;
-                icon.contentEditable = 'false';
 
-                // Insert wrapper
+                // Insert wrapper and move image into it
                 parent?.insertBefore(wrapper, img);
                 wrapper.appendChild(img);
                 wrapper.appendChild(icon);
 
-                // Click handler on wrapper
+                // Click handler
                 const handleClick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -314,6 +320,186 @@ const HTMLEditor = ({
         }
     }, [onChange, getSerializedHTML, showError]);
 
+    // Handle undo
+    const handleUndo = useCallback(() => {
+        try {
+            const iframeDoc = iframeDocRef.current;
+            if (!iframeDoc) return;
+
+            iframeDoc.execCommand('undo', false, null);
+
+            // Trigger onChange
+            if (onChange) {
+                const currentHTML = getSerializedHTML();
+                onChange(currentHTML);
+            }
+        } catch (error) {
+            console.error('Error executing undo:', error);
+        }
+    }, [onChange, getSerializedHTML]);
+
+    // Handle redo
+    const handleRedo = useCallback(() => {
+        try {
+            const iframeDoc = iframeDocRef.current;
+            if (!iframeDoc) return;
+
+            iframeDoc.execCommand('redo', false, null);
+
+            // Trigger onChange
+            if (onChange) {
+                const currentHTML = getSerializedHTML();
+                onChange(currentHTML);
+            }
+        } catch (error) {
+            console.error('Error executing redo:', error);
+        }
+    }, [onChange, getSerializedHTML]);
+
+    // Handle link editor open
+    const handleLinkClick = useCallback(() => {
+        try {
+            const iframeDoc = iframeDocRef.current;
+            if (!iframeDoc || !savedRangeRef.current) return;
+
+            const selection = iframeDoc.getSelection();
+            if (!selection) return;
+
+            // Restore selection
+            try {
+                selection.removeAllRanges();
+                selection.addRange(savedRangeRef.current);
+            } catch (e) {
+                console.error('Error restoring selection:', e);
+                return;
+            }
+
+            // Check if selection is within a link
+            let linkElement = null;
+            const parentElement = selection.anchorNode?.parentElement;
+            if (parentElement?.tagName === 'A') {
+                linkElement = parentElement;
+            } else {
+                // Check if range is entirely within a link
+                const range = selection.getRangeAt(0);
+                const container = range.commonAncestorContainer;
+                if (container.nodeType === Node.ELEMENT_NODE && container.tagName === 'A') {
+                    linkElement = container;
+                } else if (container.parentElement?.tagName === 'A') {
+                    linkElement = container.parentElement;
+                }
+            }
+
+            if (linkElement) {
+                // Editing existing link
+                setLinkEditorData({
+                    url: linkElement.href,
+                    text: linkElement.textContent || ''
+                });
+            } else {
+                // Creating new link
+                setLinkEditorData({
+                    url: '',
+                    text: selection.toString()
+                });
+            }
+
+            setShowLinkEditor(true);
+            setShowFormattingToolbar(false);
+        } catch (error) {
+            console.error('Error opening link editor:', error);
+        }
+    }, []);
+
+    // Handle link save
+    const handleLinkSave = useCallback((url, text) => {
+        try {
+            const iframeDoc = iframeDocRef.current;
+            if (!iframeDoc || !savedRangeRef.current) return;
+
+            const selection = iframeDoc.getSelection();
+            if (!selection) return;
+
+            // Restore selection
+            try {
+                selection.removeAllRanges();
+                selection.addRange(savedRangeRef.current);
+            } catch (e) {
+                console.error('Error restoring selection:', e);
+                return;
+            }
+
+            // If text is provided and selection is empty, insert text
+            if (text && selection.isCollapsed) {
+                const textNode = iframeDoc.createTextNode(text);
+                savedRangeRef.current.insertNode(textNode);
+                savedRangeRef.current.selectNodeContents(textNode);
+                selection.removeAllRanges();
+                selection.addRange(savedRangeRef.current);
+            }
+
+            // Create link
+            iframeDoc.execCommand('createLink', false, url);
+
+            // Update saved range
+            if (selection.rangeCount > 0) {
+                savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+            }
+
+            // Trigger onChange
+            if (onChange) {
+                const currentHTML = getSerializedHTML();
+                onChange(currentHTML);
+            }
+
+            setShowLinkEditor(false);
+            showStatus('Link inserted successfully!');
+        } catch (error) {
+            console.error('Error saving link:', error);
+            showError('Failed to insert link');
+        }
+    }, [onChange, getSerializedHTML, showStatus, showError]);
+
+    // Handle link remove
+    const handleLinkRemove = useCallback(() => {
+        try {
+            const iframeDoc = iframeDocRef.current;
+            if (!iframeDoc || !savedRangeRef.current) return;
+
+            const selection = iframeDoc.getSelection();
+            if (!selection) return;
+
+            // Restore selection
+            try {
+                selection.removeAllRanges();
+                selection.addRange(savedRangeRef.current);
+            } catch (e) {
+                console.error('Error restoring selection:', e);
+                return;
+            }
+
+            // Remove link
+            iframeDoc.execCommand('unlink', false, null);
+
+            // Update saved range
+            if (selection.rangeCount > 0) {
+                savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+            }
+
+            // Trigger onChange
+            if (onChange) {
+                const currentHTML = getSerializedHTML();
+                onChange(currentHTML);
+            }
+
+            setShowLinkEditor(false);
+            showStatus('Link removed successfully!');
+        } catch (error) {
+            console.error('Error removing link:', error);
+            showError('Failed to remove link');
+        }
+    }, [onChange, getSerializedHTML, showStatus, showError]);
+
     // Setup editable content
     const setupEditableContent = useCallback(() => {
         try {
@@ -357,24 +543,20 @@ const HTMLEditor = ({
                     cursor: pointer !important;
                 }
                 ${assets.length > 0 ? `
-                /* Image wrapper styles */
+                /* Image wrapper - minimal styling */
                 .html-editor-image-wrapper {
-                    position: relative !important;
-                    display: inline !important;
                     cursor: pointer !important;
                 }
 
                 .html-editor-image-wrapper img {
-                    transition: opacity 0.2s, filter 0.2s !important;
-                    cursor: pointer !important;
+                    transition: filter 0.2s ease !important;
                 }
 
                 .html-editor-image-wrapper:hover img {
-                    opacity: 0.85 !important;
-                    filter: brightness(0.95) !important;
+                    filter: brightness(0.9) !important;
                 }
 
-                /* Edit icon styles - subtle corner design */
+                /* Edit icon styles */
                 .html-editor-image-icon {
                     position: absolute !important;
                     top: 8px !important;
@@ -390,10 +572,11 @@ const HTMLEditor = ({
                     justify-content: center !important;
                     cursor: pointer !important;
                     opacity: 0 !important;
-                    transition: all 0.2s ease !important;
                     pointer-events: none !important;
+                    transition: all 0.2s ease !important;
                     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
                     border: 1px solid rgba(0, 0, 0, 0.1) !important;
+                    z-index: 10 !important;
                 }
 
                 .html-editor-image-icon:hover {
@@ -443,6 +626,27 @@ const HTMLEditor = ({
             // Setup text selection listener for formatting toolbar
             setupSelectionListener(iframeDoc);
 
+            // Setup keyboard shortcuts
+            const handleKeyDown = (e) => {
+                // Ctrl+Z for undo
+                if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleUndo();
+                }
+                // Ctrl+Y or Ctrl+Shift+Z for redo
+                else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                    e.preventDefault();
+                    handleRedo();
+                }
+                // Ctrl+K for link
+                else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    handleLinkClick();
+                }
+            };
+
+            iframeDoc.addEventListener('keydown', handleKeyDown);
+
             // Auto-focus the body
             setTimeout(() => {
                 body.focus();
@@ -453,7 +657,7 @@ const HTMLEditor = ({
             console.error('Error setting up editable content:', error);
             showError('Failed to initialize editor. Please refresh the page.');
         }
-    }, [assets, onChange, getSerializedHTML, setupImageClickHandlers, setupSelectionListener, showError]);
+    }, [assets, onChange, getSerializedHTML, setupImageClickHandlers, setupSelectionListener, handleUndo, handleRedo, handleLinkClick, showError]);
 
     // Inject HTML into iframe
     useEffect(() => {
@@ -668,6 +872,18 @@ const HTMLEditor = ({
                     position={toolbarPosition}
                     onCommand={executeCommand}
                     onClose={() => setShowFormattingToolbar(false)}
+                    onLinkClick={handleLinkClick}
+                />
+            )}
+
+            {/* Link Editor */}
+            {showLinkEditor && (
+                <LinkEditor
+                    existingUrl={linkEditorData.url}
+                    existingText={linkEditorData.text}
+                    onSave={handleLinkSave}
+                    onRemove={linkEditorData.url ? handleLinkRemove : null}
+                    onClose={() => setShowLinkEditor(false)}
                 />
             )}
 
@@ -677,10 +893,9 @@ const HTMLEditor = ({
                     fileName={state.currentFileName}
                     isLoading={state.isLoading}
                     hasContent={!!state.htmlContent}
-                    hasInitialHTML={!!initialHTML}
-                    onLoadFile={handleLoadFile}
-                    onReset={handleReset}
                     onSave={handleSave}
+                    onUndo={handleUndo}
+                    onRedo={handleRedo}
                 />
             )}
 

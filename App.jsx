@@ -80,7 +80,9 @@ function App() {
     };
 
     const handleSave = (htmlContent) => {
-        console.log('HTML saved:', htmlContent.substring(0, 100) + '...');
+        console.log('=== Edited HTML ===');
+        console.log(htmlContent);
+        console.log('===================');
         // You can add custom save logic here
         // For example, send to a server, save to localStorage, etc.
     };

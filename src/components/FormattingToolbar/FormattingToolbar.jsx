@@ -5,7 +5,7 @@ import styles from './FormattingToolbar.module.css';
  * FormattingToolbar Component
  * Floating toolbar for text formatting with position and dropdown
  */
-const FormattingToolbar = ({ position, onCommand, onClose }) => {
+const FormattingToolbar = ({ position, onCommand, onClose, onLinkClick }) => {
     const [showMoreOptions, setShowMoreOptions] = useState(false);
     const toolbarRef = useRef(null);
 
@@ -84,6 +84,20 @@ const FormattingToolbar = ({ position, onCommand, onClose }) => {
                         <path d="M17.3 4.9c-2.3-.6-4.4-1-6.2-.9-2.7.1-5.3 1.1-6.6 3.1-.5.9-.8 1.9-.8 2.9 0 2.5 2.1 4.8 6.2 5.4"></path>
                         <path d="M6.5 19c1.9 1.1 5.3 1.4 8.5.5 2.5-.7 4.4-2.4 4.8-4.5.2-1.1 0-2.2-.5-3"></path>
                         <line x1="3" y1="12" x2="21" y2="12"></line>
+                    </svg>
+                </button>
+
+                <div className={styles.divider}></div>
+
+                {/* Link */}
+                <button
+                    className={styles.btn}
+                    onClick={onLinkClick}
+                    title="Insert Link (Ctrl+K)"
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                     </svg>
                 </button>
 
